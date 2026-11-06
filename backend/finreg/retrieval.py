@@ -1,10 +1,14 @@
 """Semantic search with a lexical baseline when the vector service is unavailable."""
+import logging
 import re
 from functools import lru_cache
+
 from sqlalchemy import select
+
 from finreg.config import settings
 from finreg.models import Passage
 
+logger = logging.getLogger(__name__)
 
 @lru_cache(maxsize=1)
 def encoder():
@@ -31,7 +35,7 @@ def search(session, query: str, limit: int = 8, semantic: bool = True) -> tuple[
             passages = [session.get(Passage, str(hit.id)) for hit in hits]
             return [p for p in passages if p], "semantic"
         except Exception:
-            pass
+            logger.warning("Semantic retrieval unavailable; using lexical search", exc_info=True)
     tokens = set(re.findall(r"[a-z]{3,}", query.lower()))
     passages = session.scalars(select(Passage)).all()
     ranked = sorted(passages, key=lambda p: len(tokens & set(re.findall(r"[a-z]{3,}", p.text.lower()))), reverse=True)

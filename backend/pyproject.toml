@@ -37,5 +37,8 @@ testpaths = ["tests"]
 line-length = 100
 target-version = "py312"
 
+[tool.ruff.lint.per-file-ignores]
+"finreg/main.py" = ["B008"] # FastAPI uses Depends and File as parameter defaults.
+
 [tool.setuptools.packages.find]
 include = ["finreg*"]

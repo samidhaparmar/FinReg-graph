@@ -1,12 +1,13 @@
 import fitz
 from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
+
 from finreg.db import Base, get_session
 from finreg.ingestion import extract_passages
 from finreg.main import app
 from finreg.nlp import extract_obligations, validate_evidence
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 
 
 def sample_pdf():

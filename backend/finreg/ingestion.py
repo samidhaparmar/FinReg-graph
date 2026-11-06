@@ -1,5 +1,6 @@
 """Page-aware PDF parsing. Article headings are carried across page breaks."""
 import re
+
 import fitz
 
 ARTICLE = re.compile(r"^Article\s+(\d+[A-Za-z]?)\s*$", re.IGNORECASE)

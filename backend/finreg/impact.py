@@ -1,5 +1,6 @@
 """Heuristic candidate matching. Output is an interpretation, never legal scope."""
 import re
+
 from finreg.models import BusinessProfile, Obligation
 
 STOP = {"shall", "must", "have", "with", "their", "from", "that", "this", "which", "such", "into", "they", "them", "financial", "entities"}

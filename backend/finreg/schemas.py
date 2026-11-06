@@ -1,21 +1,21 @@
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 
 class Evidence(BaseModel):
     passage_id: str
     document_id: str
-    article: Optional[str]
+    article: str | None
     page: int
     quote: str
-    source_url: Optional[str] = None
+    source_url: str | None = None
 
 
 class ExtractedObligation(BaseModel):
     subject: str = Field(min_length=2)
     action: str = Field(min_length=5)
     evidence_quote: str = Field(min_length=5)
-    deadline: Optional[str] = None
+    deadline: str | None = None
     confidence: float = Field(ge=0, le=1)
 
 
@@ -27,4 +27,4 @@ class ProfileIn(BaseModel):
 
 class QueryIn(BaseModel):
     question: str = Field(min_length=3)
-    profile_id: Optional[str] = None
+    profile_id: str | None = None

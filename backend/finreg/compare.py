@@ -1,6 +1,8 @@
 """Version comparison based on article text, without interpreting legal changes."""
 from difflib import unified_diff
+
 from sqlalchemy import select
+
 from finreg.models import Passage
 
 

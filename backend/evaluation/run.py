@@ -5,6 +5,7 @@ Run from backend: python -m evaluation.run
 import json
 import re
 from pathlib import Path
+
 from finreg.nlp import extract_obligations, validate_evidence
 
 

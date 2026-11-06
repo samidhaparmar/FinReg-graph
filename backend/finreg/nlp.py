@@ -1,5 +1,6 @@
 """Conservative extraction: store only claims grounded in a passage."""
 import re
+
 from finreg.schemas import ExtractedObligation
 
 MODAL = re.compile(r"\b(shall|must)\b", re.IGNORECASE)

@@ -1,11 +1,15 @@
 """LangGraph query path. Every final claim carries stored evidence."""
+import logging
 from typing import TypedDict
-from langgraph.graph import StateGraph, END
-from sqlalchemy import select
-from finreg.models import Obligation, Passage, Document, BusinessProfile
-from finreg.retrieval import search, expand_by_article
-from finreg.impact import classify
 
+from langgraph.graph import END, StateGraph
+from sqlalchemy import select
+
+from finreg.impact import classify
+from finreg.models import BusinessProfile, Document, Obligation, Passage
+from finreg.retrieval import expand_by_article, search
+
+logger = logging.getLogger(__name__)
 
 class QueryState(TypedDict, total=False):
     question: str
@@ -35,6 +39,7 @@ def explore(state: QueryState) -> QueryState:
     try:
         graph = neighbors(ids)
     except Exception:
+        logger.warning("Graph traversal unavailable", exc_info=True)
         graph = []
     return {"graph": graph}
 

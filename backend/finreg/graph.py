@@ -1,5 +1,6 @@
 """Neo4j projection of the evidence store. SQL remains the source of truth."""
 from neo4j import GraphDatabase
+
 from finreg.config import settings
 
 

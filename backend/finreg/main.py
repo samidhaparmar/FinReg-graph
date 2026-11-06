@@ -1,18 +1,22 @@
 import hashlib
+import logging
+
 from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import select
 from sqlalchemy.orm import Session
+
+from finreg.compare import compare_documents
 from finreg.config import settings
 from finreg.db import get_session
+from finreg.entities import detect_entities
 from finreg.ingestion import extract_passages
 from finreg.models import BusinessProfile, Document, Obligation, Passage
 from finreg.nlp import extract_obligations, extract_with_llm, validate_evidence
 from finreg.schemas import ProfileIn, QueryIn
 from finreg.workflow import query_graph
-from finreg.compare import compare_documents
-from finreg.entities import detect_entities
 
+logger = logging.getLogger(__name__)
 app = FastAPI(title="FinReg Graph", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=settings.cors_origins.split(","),
                    allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
@@ -64,7 +68,7 @@ async def upload_document(file: UploadFile = File(...), title: str = Form(...),
             try:
                 candidates.extend(extract_with_llm(passage.text, settings.ollama_model, settings.ollama_url))
             except Exception:
-                pass
+                logger.warning("Optional LLM extraction failed; using explicit modal extraction", exc_info=True)
         seen = set()
         for candidate in candidates:
             if not validate_evidence(candidate, passage.text):
@@ -86,11 +90,13 @@ async def upload_document(file: UploadFile = File(...), title: str = Form(...),
         index_passages(passages)
     except Exception as exc:
         warnings.append(f"Vector indexing unavailable: {type(exc).__name__}")
+        logger.warning("Vector indexing failed", exc_info=True)
     try:
         from finreg.graph import project_document
         project_document(document, passages, obligations)
     except Exception as exc:
         warnings.append(f"Graph projection unavailable: {type(exc).__name__}")
+        logger.warning("Graph projection failed", exc_info=True)
     return {"id": document.id, "passages": len(passages), "obligations": len(obligations), "warnings": warnings}
 
 
@@ -161,7 +167,7 @@ def create_profile(data: ProfileIn, session: Session = Depends(get_session)):
         from finreg.graph import project_profile
         project_profile(profile)
     except Exception:
-        pass
+        logger.warning("Business profile graph projection failed", exc_info=True)
     return {"id": profile.id, **data.model_dump()}
 
 
