@@ -36,6 +36,21 @@ PostgreSQL is the canonical store. Neo4j and Qdrant are rebuildable projections.
 
 The first run downloads the embedding model and can take several minutes. To enable optional local structured extraction, run `docker compose --profile llm up --build`, pull the configured model into Ollama, and set `ENABLE_LLM=true`. Default extraction uses only explicit `shall`/`must` statements. Ollama extraction is filtered against an exact source quote before storage.
 
+### Local UI preview without Docker
+
+With Python 3.12 and Node 20 or newer installed, run:
+
+On Homebrew installations where `node@20` is not linked, first run `export PATH="$(brew --prefix node@20)/bin:$PATH"`.
+
+```bash
+python3.12 -m venv .venv
+.venv/bin/pip install -e './backend[dev]'
+cd web && npm ci && cd ..
+bash scripts/preview-local.sh
+```
+
+Open `http://127.0.0.1:3000`. This preview uses SQLite and lexical retrieval. The knowledge graph screen reads the canonical SQL evidence store; Neo4j and Qdrant are optional services for this preview. Download the official DORA PDF above and upload it in **Documents**. The screens have direct routes: `/documents`, `/search`, `/graph`, and `/impact`.
+
 ### API examples
 
 ```bash

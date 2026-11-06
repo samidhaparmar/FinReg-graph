@@ -53,6 +53,7 @@ class Obligation(Base):
     passage_id: Mapped[str] = mapped_column(ForeignKey("passages.id", ondelete="CASCADE"))
     subject: Mapped[str] = mapped_column(String(200))
     action: Mapped[str] = mapped_column(Text)
+    evidence_quote: Mapped[str | None] = mapped_column(Text)
     deadline: Mapped[str | None] = mapped_column(String(100))
     confidence: Mapped[float] = mapped_column(Float)
     method: Mapped[str] = mapped_column(String(30))

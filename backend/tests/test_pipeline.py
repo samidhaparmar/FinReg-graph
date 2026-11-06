@@ -5,8 +5,10 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from finreg.db import Base, get_session
+from finreg.impact import classify
 from finreg.ingestion import extract_passages
 from finreg.main import app
+from finreg.models import BusinessProfile, Obligation
 from finreg.nlp import extract_obligations, validate_evidence
 
 
@@ -57,3 +59,13 @@ def test_upload_query_returns_verifiable_evidence(monkeypatch):
     finally:
         app.dependency_overrides.clear()
         Base.metadata.drop_all(engine)
+
+
+def test_authority_duty_is_not_assigned_to_fintech_profile():
+    profile = BusinessProfile(name="Sample fintech", entity_type="payment institution",
+                              activities=["ICT risk management"])
+    obligation = Obligation(subject="The competent authorities", action="shall review ICT risk management",
+                            confidence=0.65, method="explicit_modal", document_id="doc", passage_id="passage")
+    result = classify(profile, obligation)
+    assert result["classification"] == "unclear"
+    assert "The competent authorities" in result["reason"]

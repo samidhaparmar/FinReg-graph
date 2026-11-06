@@ -7,7 +7,7 @@ from sqlalchemy import select
 
 from finreg.impact import classify
 from finreg.models import BusinessProfile, Document, Obligation, Passage
-from finreg.retrieval import expand_by_article, search
+from finreg.retrieval import expand_by_article, query_terms, search
 
 logger = logging.getLogger(__name__)
 
@@ -47,19 +47,31 @@ def explore(state: QueryState) -> QueryState:
 def analyze(state: QueryState) -> QueryState:
     session = state["session"]
     profile = session.get(BusinessProfile, state["profile_id"]) if state.get("profile_id") else None
+    terms = query_terms(state["question"])
     items = []
     for obligation in session.scalars(select(Obligation).where(Obligation.passage_id.in_(state["passage_ids"]))).all():
+        if obligation.subject.casefold() in {"they", "it", "these", "those"}:
+            continue
         passage = session.get(Passage, obligation.passage_id)
         document = session.get(Document, obligation.document_id)
         item = {"id": obligation.id, "subject": obligation.subject, "action": obligation.action,
             "confidence": obligation.confidence, "extracted_fact": True,
             "evidence": {"passage_id": passage.id, "document_id": document.id,
-                "article": passage.article, "page": passage.page, "quote": passage.text,
+                "article": passage.article, "page": passage.page,
+                "quote": obligation.evidence_quote or passage.text,
                 "source_url": document.source_url}}
         if profile:
             item["impact"] = classify(profile, obligation)
+        subject_terms = query_terms(obligation.subject)
+        action_terms = query_terms(obligation.action)
+        item["_rank"] = 3 * len(terms & subject_terms) + len(terms & action_terms)
+        item["_ordinal"] = passage.ordinal
         items.append(item)
-    return {"items": items}
+    items.sort(key=lambda item: (-item["_rank"], item["_ordinal"]))
+    for item in items:
+        del item["_rank"]
+        del item["_ordinal"]
+    return {"items": items[:12]}
 
 
 def verify(state: QueryState) -> QueryState:
@@ -67,7 +79,8 @@ def verify(state: QueryState) -> QueryState:
     valid = []
     for item in state["items"]:
         passage = session.get(Passage, item["evidence"]["passage_id"])
-        if passage and item["action"] in passage.text and item["evidence"]["quote"] == passage.text:
+        quote = item["evidence"]["quote"]
+        if passage and quote in passage.text and item["action"] in quote:
             valid.append(item)
     return {"items": valid}
 

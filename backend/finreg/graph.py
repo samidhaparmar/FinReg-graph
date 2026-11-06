@@ -48,6 +48,7 @@ def project_profile(profile) -> None:
     try:
         with driver.session() as session:
             session.run("MERGE (p:BusinessProfile {id:$id}) SET p.name=$name, p.entity_type=$entity_type", id=profile.id, name=profile.name, entity_type=profile.entity_type)
+            session.run("MATCH (p:BusinessProfile {id:$id})-[r:PERFORMS]->(:BusinessProcess) DELETE r", id=profile.id)
             for activity in profile.activities:
                 session.run("MATCH (p:BusinessProfile {id:$id}) MERGE (b:BusinessProcess {id:$bid}) SET b.name=$name MERGE (p)-[:PERFORMS]->(b)", id=profile.id, bid=activity.casefold(), name=activity)
     finally:

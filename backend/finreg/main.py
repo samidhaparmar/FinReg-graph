@@ -79,6 +79,7 @@ async def upload_document(file: UploadFile = File(...), title: str = Form(...),
             seen.add(key)
             item = Obligation(document_id=document.id, passage_id=passage.id,
                               subject=candidate.subject, action=candidate.action,
+                              evidence_quote=candidate.evidence_quote,
                               deadline=candidate.deadline, confidence=candidate.confidence,
                               method="explicit_modal")
             session.add(item)
@@ -127,6 +128,7 @@ def graph_data(session: Session = Depends(get_session)):
     for doc in session.scalars(select(Document)).all():
         nodes.append({"id": doc.id, "label": doc.regulation_id, "type": "regulation"})
     articles = set()
+    mentions = set()
     for passage in session.scalars(select(Passage)).all():
         article_id = f"{passage.document_id}:{passage.article}"
         if article_id not in articles:
@@ -137,7 +139,10 @@ def graph_data(session: Session = Depends(get_session)):
             entity_id = f"entity:{entity['type']}:{entity['text'].casefold()}"
             if not any(node["id"] == entity_id for node in nodes):
                 nodes.append({"id": entity_id, "label": entity["text"], "type": "entity"})
-            edges.append({"source": article_id, "target": entity_id, "label": "MENTIONS"})
+            mention = (article_id, entity_id)
+            if mention not in mentions:
+                mentions.add(mention)
+                edges.append({"source": article_id, "target": entity_id, "label": "MENTIONS"})
     for obligation in session.scalars(select(Obligation)).all():
         passage = session.get(Passage, obligation.passage_id)
         nodes.append({"id": obligation.id, "label": obligation.action[:65], "type": "obligation"})
@@ -162,6 +167,22 @@ def profiles(session: Session = Depends(get_session)):
 def create_profile(data: ProfileIn, session: Session = Depends(get_session)):
     profile = BusinessProfile(**data.model_dump())
     session.add(profile)
+    session.commit()
+    try:
+        from finreg.graph import project_profile
+        project_profile(profile)
+    except Exception:
+        logger.warning("Business profile graph projection failed", exc_info=True)
+    return {"id": profile.id, **data.model_dump()}
+
+
+@app.put("/profiles/{profile_id}")
+def update_profile(profile_id: str, data: ProfileIn, session: Session = Depends(get_session)):
+    profile = session.get(BusinessProfile, profile_id)
+    if not profile:
+        raise HTTPException(404, "Profile not found")
+    for key, value in data.model_dump().items():
+        setattr(profile, key, value)
     session.commit()
     try:
         from finreg.graph import project_profile

@@ -9,6 +9,12 @@ from finreg.config import settings
 from finreg.models import Passage
 
 logger = logging.getLogger(__name__)
+STOPWORDS = {"what", "which", "are", "the", "for", "and", "with", "from", "does",
+             "obligations", "obligation", "duties", "stated", "apply", "regulation"}
+
+
+def query_terms(query: str) -> set[str]:
+    return set(re.findall(r"[a-z]{3,}", query.casefold())) - STOPWORDS
 
 @lru_cache(maxsize=1)
 def encoder():
@@ -36,9 +42,9 @@ def search(session, query: str, limit: int = 8, semantic: bool = True) -> tuple[
             return [p for p in passages if p], "semantic"
         except Exception:
             logger.warning("Semantic retrieval unavailable; using lexical search", exc_info=True)
-    tokens = set(re.findall(r"[a-z]{3,}", query.lower()))
+    tokens = query_terms(query)
     passages = session.scalars(select(Passage)).all()
-    ranked = sorted(passages, key=lambda p: len(tokens & set(re.findall(r"[a-z]{3,}", p.text.lower()))), reverse=True)
+    ranked = sorted(passages, key=lambda p: (-len(tokens & set(re.findall(r"[a-z]{3,}", p.text.casefold()))), p.ordinal))
     return [p for p in ranked[:limit] if tokens & set(re.findall(r"[a-z]{3,}", p.text.lower()))], "lexical"
 
 

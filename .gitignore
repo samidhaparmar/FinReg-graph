@@ -8,4 +8,6 @@ web/node_modules/
 web/.next/
 data/uploads/
 data/*.db
+backend/*.db
+web/*.tsbuildinfo
 coverage/

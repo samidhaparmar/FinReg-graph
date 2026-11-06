@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     ollama_model: str = "llama3.1:8b"
     embedding_model: str = "sentence-transformers/all-MiniLM-L6-v2"
     enable_llm: bool = False
-    cors_origins: str = "http://localhost:3000"
+    cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
 
 
 settings = Settings()

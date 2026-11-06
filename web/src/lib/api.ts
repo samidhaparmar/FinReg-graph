@@ -1,4 +1,4 @@
-export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
 export type Document = { id: string; title: string; regulation_id: string; version: string; source_url?: string; created_at: string };
 export type Profile = { id: string; name: string; entity_type: string; activities: string[] };
 export type Evidence = { passage_id: string; document_id: string; article: string; page: number; quote: string; source_url?: string };
@@ -12,6 +12,11 @@ export async function get<T>(path: string): Promise<T> {
 }
 export async function post<T>(path: string, body: unknown): Promise<T> {
   const response = await fetch(API + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  if (!response.ok) throw new Error(await response.text());
+  return response.json();
+}
+export async function put<T>(path: string, body: unknown): Promise<T> {
+  const response = await fetch(API + path, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
   if (!response.ok) throw new Error(await response.text());
   return response.json();
 }
