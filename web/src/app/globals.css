@@ -1,0 +1,9 @@
+@import '@xyflow/react/dist/style.css';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body { background: #f6f8f8; color: #172533; font-family: Arial, Helvetica, sans-serif; }
+.panel { @apply rounded-2xl border border-line bg-white shadow-sm; }
+.input { @apply w-full rounded-lg border border-line bg-white px-3 py-2 text-sm outline-none focus:border-teal; }
+.button { @apply rounded-lg bg-teal px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-50; }
+.button-light { @apply rounded-lg border border-line bg-white px-4 py-2 text-sm font-semibold text-ink hover:bg-canvas; }

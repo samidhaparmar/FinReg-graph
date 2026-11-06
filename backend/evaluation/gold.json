@@ -1,0 +1,26 @@
+[
+  {
+    "id": "dora-a6-1",
+    "article": "Article 6",
+    "source": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    "text": "Financial entities shall have a sound, comprehensive and well-documented ICT risk management framework as part of their overall risk management system.",
+    "gold_subjects": ["Financial entities"],
+    "queries": ["ICT risk management framework"]
+  },
+  {
+    "id": "dora-a4-1",
+    "article": "Article 4",
+    "source": "https://eur-lex.europa.eu/eli/reg/2022/2554/oj",
+    "text": "Financial entities shall implement the rules laid down in Chapter II in accordance with the principle of proportionality.",
+    "gold_subjects": ["Financial entities"],
+    "queries": ["proportionality rules"]
+  },
+  {
+    "id": "negative-example",
+    "article": "Test note",
+    "source": "local synthetic negative example",
+    "text": "This explanatory note describes common operational practices without imposing a duty.",
+    "gold_subjects": [],
+    "queries": []
+  }
+]

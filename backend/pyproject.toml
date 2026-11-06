@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=70", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "finreg-graph"
+version = "0.1.0"
+description = "Evidence-linked financial regulation analysis"
+requires-python = ">=3.12"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn[standard]>=0.30,<1",
+  "pydantic-settings>=2.5,<3",
+  "sqlalchemy>=2.0,<3",
+  "psycopg[binary]>=3.2,<4",
+  "alembic>=1.13,<2",
+  "python-multipart>=0.0.9,<1",
+  "pymupdf>=1.24,<2",
+  "neo4j>=5.25,<7",
+  "qdrant-client>=1.12,<2",
+  "sentence-transformers>=3.2,<6",
+  "spacy>=3.8,<4",
+  "langchain-core>=0.3,<2",
+  "langchain-ollama>=0.2,<2",
+  "langgraph>=0.2,<2",
+]
+
+[project.optional-dependencies]
+docling = ["docling>=2,<3"]
+eval = ["ragas>=0.2,<1"]
+dev = ["pytest>=8,<10", "httpx>=0.27,<1", "ruff>=0.7,<1"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.setuptools.packages.find]
+include = ["finreg*"]
