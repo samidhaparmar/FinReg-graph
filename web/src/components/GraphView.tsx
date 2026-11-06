@@ -1,12 +1,16 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Background, Controls, MiniMap, ReactFlow, type Edge, type Node } from "@xyflow/react";
+import { Background, Controls, MiniMap, Position, ReactFlow, type Edge, type Node } from "@xyflow/react";
 import type { Graph } from "@/lib/api";
 
 const colors: Record<string, string> = {
-  regulation: "#087f71", article: "#4675a4", obligation: "#e4a841",
-  entity: "#9c75b6", profile: "#0d6b65", process: "#6a9d69",
+  regulation: "#0f846f", article: "#2774d8", obligation: "#d79a36",
+  entity: "#8c70b0", profile: "#0f846f", process: "#719970",
+};
+const fills: Record<string, string> = {
+  regulation: "#eef9f5", article: "#eef5ff", obligation: "#fff9ed",
+  entity: "#f7f2fc", profile: "#eef9f5", process: "#f1f8f1",
 };
 
 export default function GraphView({ data }: { data: Graph }) {
@@ -31,22 +35,32 @@ export default function GraphView({ data }: { data: Graph }) {
   const totalPages = Math.ceil((selected === "profiles" ? selectedEdges.length : obligationEdges.length) / 6);
   const ids = new Set(limitedEdges.flatMap(edge => [edge.source, edge.target]));
   const visible = data.nodes.filter(node => ids.has(node.id));
-  const counters = [0, 0, 0];
-  const layers: Record<string, number> = {
-    regulation: 0, profile: 0, article: 1, process: 1, obligation: 2, entity: 2,
-  };
+  const counters: Record<string, number> = {};
+  const obligationCount = visible.filter(node => node.type === "obligation").length;
+  const centerY = Math.max(160, ((obligationCount - 1) * 94) / 2);
   const nodes: Node[] = visible.map(node => {
-    const layer = layers[node.type] ?? 2;
-    const position = { x: layer * 260, y: counters[layer]++ * 76 };
+    const index = counters[node.type] || 0;
+    counters[node.type] = index + 1;
+    const position = node.type === "regulation" || node.type === "profile"
+      ? { x: 0, y: centerY + index * 94 }
+      : node.type === "article" || node.type === "process"
+        ? { x: 250, y: centerY + index * 94 }
+        : node.type === "entity"
+          ? { x: 500, y: 40 + index * 94 }
+          : { x: 750, y: 20 + index * 94 };
+    const label = node.type === "obligation" && node.label.length > 74
+      ? node.label.slice(0, 72) + "…" : node.label;
     return {
-      id: node.id, position, data: { label: node.label },
-      style: { width: 210, borderRadius: 12, border: `2px solid ${colors[node.type]}`,
-        background: "white", padding: 10, fontSize: 14 },
+      id: node.id, position, sourcePosition: Position.Right, targetPosition: Position.Left,
+      data: { label },
+      style: { width: 195, minHeight: 54, borderRadius: 9, border: `1.5px solid ${colors[node.type]}`,
+        background: fills[node.type], padding: 10, fontSize: 12, lineHeight: 1.35,
+        color: "#172b45", boxShadow: "0 2px 6px rgba(25,48,79,.07)" },
     };
   });
   const edges: Edge[] = limitedEdges.map((edge, index) => ({
     id: String(index), source: edge.source, target: edge.target, label: edge.label,
-    style: { stroke: "#a8b9ba" },
+    style: { stroke: "#a7b8c9" },
   }));
 
   return <div>
@@ -63,9 +77,9 @@ export default function GraphView({ data }: { data: Graph }) {
         <button className="button-light" disabled={page >= totalPages - 1} onClick={() => setPage(page + 1)}>Next</button>
       </div>}
     </div>
-    <div className="h-[640px] rounded-xl border border-line">
-      {visible.length ? <ReactFlow key={`${selected}:${page}`} nodes={nodes} edges={edges} fitView nodesDraggable={false}>
-        <Background color="#dfe8e8" /><Controls /><MiniMap />
+    <div className="h-[640px] overflow-hidden rounded-xl border border-line">
+      {visible.length ? <ReactFlow key={`${selected}:${page}`} nodes={nodes} edges={edges} fitView fitViewOptions={{ padding: 0.13, maxZoom: 1 }} nodesDraggable={false}>
+        <Background color="#e8eef5" /><Controls /><MiniMap />
       </ReactFlow> : <p className="p-6 text-sm text-muted">Upload a regulation to explore its article graph.</p>}
     </div>
   </div>;

@@ -4,6 +4,12 @@ FinReg Graph is a research workspace for tracing financial regulation text to ca
 
 The first supported collection is one version of **Regulation (EU) 2022/2554 (DORA)** and a sample payment fintech profile. Other versions can be uploaded for a text comparison, but extraction quality is only evaluated on the small DORA sample in this repository.
 
+## Interface preview
+
+![FinReg Graph overview](docs/screenshots/overview.jpg)
+
+The sample DORA workspace is shown across the [Documents](docs/screenshots/documents.jpg), [Search](docs/screenshots/search.jpg), [Knowledge graph](docs/screenshots/graph.jpg), and [Impact analysis](docs/screenshots/impact.jpg) screens. Run the local preview below to use each page interactively.
+
 ## Architecture
 
 ```mermaid
